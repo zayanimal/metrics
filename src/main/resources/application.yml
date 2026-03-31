@@ -1,0 +1,20 @@
+server:
+  port: 8080
+
+websocket:
+  url: ws://localhost:8089/ws
+  user: user
+  pass: "11223"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus, health
+  endpoint:
+    prometheus:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
