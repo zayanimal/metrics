@@ -1,0 +1,11 @@
+services:
+  temperature-exporter:
+    build: .
+    container_name: temperature-exporter
+    ports:
+      - "8080:8080"
+    environment:
+      - WEBSOCKET_URL=${WEBSOCKET_URL:-ws://host.docker.internal:8089/ws}
+      - WEBSOCKET_USER=${WEBSOCKET_USER:-user}
+      - WEBSOCKET_PASS=${WEBSOCKET_PASS:-11223}
+    restart: unless-stopped

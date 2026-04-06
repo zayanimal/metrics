@@ -17,13 +17,19 @@ import java.time.Duration
 
 @Service
 class TemperatureWebSocketService(
+
     private val objectMapper: ObjectMapper,
+
     private val metrics: TemperatureMetrics,
+
     @Value("\${websocket.url}") private val wsUrl: String,
+
     @Value("\${websocket.user}") private val wsUser: String,
+
     @Value("\${websocket.pass}") private val wsPass: String,
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
+
     private val client = ReactorNettyWebSocketClient()
 
     @PostConstruct
@@ -73,11 +79,13 @@ class TemperatureWebSocketService(
                                 authSink.tryEmitValue(false)
                             }
                         }
+
                         node.has("water") -> {
                             val response = objectMapper.treeToValue(node, TemperatureResponse::class.java)
                             metrics.update(response)
                             log.debug("Metrics updated: water={}, dhw={}", response.water, response.dhw)
                         }
+
                         else -> log.warn("Unknown message: $text")
                     }
                 }
