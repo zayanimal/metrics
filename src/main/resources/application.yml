@@ -1,10 +1,13 @@
 server:
   port: 8080
 
+repeat:
+  delay: ${WEBSOCKET_DELAY}
+
 websocket:
-  url: ws://localhost:8089/ws
-  user: user
-  pass: "11223"
+  url: ${WEBSOCKET_URL}
+  user: ${WEBSOCKET_USER}
+  pass: ${WEBSOCKET_PASS}
 
 management:
   endpoints:

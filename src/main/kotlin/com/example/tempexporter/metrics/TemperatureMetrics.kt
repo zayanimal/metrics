@@ -10,21 +10,25 @@ import java.util.concurrent.atomic.AtomicReference
 class TemperatureMetrics(registry: MeterRegistry) {
 
     private val water = AtomicReference(0.0)
+
     private val dhw   = AtomicReference(0.0)
+
     private val modul = AtomicReference(0.0)
+
     private val state = AtomicReference(0.0)
+
     private val err   = AtomicReference(0.0)
 
     init {
         Gauge.builder("boiler_water_temperature_celsius", water, AtomicReference<Double>::get)
-            .description("Water temperature")
+            .description("Water temperature in the heating system")
             .register(registry)
 
         Gauge.builder("boiler_dhw_temperature_celsius", dhw, AtomicReference<Double>::get)
             .description("Domestic hot water temperature")
             .register(registry)
 
-        Gauge.builder("boiler_module_state", modul, AtomicReference<Double>::get)
+        Gauge.builder("boiler_modulation_state", modul, AtomicReference<Double>::get)
             .description("Module state")
             .register(registry)
 

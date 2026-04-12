@@ -4,7 +4,7 @@ Spring Boot Kotlin WebFlux сервис, который подключается
 
 ## Требования
 
-- Java 21+
+- Java 25+
 - Maven 3.8+
 - Запущенный WebSocket сервер (см. [Запуск сервера](#запуск-сервера))
 
@@ -17,7 +17,7 @@ mvn spring-boot:run
 Метрики доступны по адресу:
 
 ```
-GET http://localhost:8080/actuator/prometheus
+GET http://localhost:1099/actuator/prometheus
 ```
 
 ## Архитектура
@@ -72,14 +72,14 @@ Prometheus (GET /actuator/prometheus)
 |---|---|---|
 | `boiler_water_temperature_celsius` | Gauge | Температура воды в контуре отопления |
 | `boiler_dhw_temperature_celsius` | Gauge | Температура ГВС (горячее водоснабжение) |
-| `boiler_module_state` | Gauge | Состояние модуля (0 — норма) |
+| `boiler_modulation_state` | Gauge | Состояние модуляции (0 — норма) |
 | `boiler_state` | Gauge | Состояние котла (0 — норма) |
 | `boiler_error_code` | Gauge | Код ошибки (0 — нет ошибок) |
 
 Пример вывода `/actuator/prometheus`:
 
 ```
-# HELP boiler_water_temperature_celsius Water temperature
+# HELP boiler_water_temperature_celsius Water temperature in the heating system
 # TYPE boiler_water_temperature_celsius gauge
 boiler_water_temperature_celsius 44.0
 
@@ -87,9 +87,9 @@ boiler_water_temperature_celsius 44.0
 # TYPE boiler_dhw_temperature_celsius gauge
 boiler_dhw_temperature_celsius 42.0
 
-# HELP boiler_module_state Module state
-# TYPE boiler_module_state gauge
-boiler_module_state 0.0
+# HELP boiler_modulation_state Module state
+# TYPE boiler_modulation_state gauge
+boiler_modulation_state 0.0
 
 # HELP boiler_state Boiler state
 # TYPE boiler_state gauge
@@ -108,10 +108,13 @@ boiler_error_code 0.0
 server:
   port: 8080              # порт HTTP сервера (actuator)
 
+repeat:
+  delay: ${WEBSOCKET_DELAY}  # интервал переподключения при разрыве соединения (секунды)
+
 websocket:
-  url: ws://localhost:8089/ws   # адрес WebSocket сервера
-  user: user               # логин для авторизации
-  pass: "11223"                 # пароль для авторизации
+  url: ${WEBSOCKET_URL}         # адрес WebSocket сервера
+  user: ${WEBSOCKET_USER}       # логин для авторизации
+  pass: ${WEBSOCKET_PASS}       # пароль для авторизации
 
 management:
   endpoints:
@@ -120,9 +123,10 @@ management:
         include: prometheus, health
 ```
 
-Переменные можно переопределить через environment variables:
+Переменные необходимо задать через environment variables:
 
 ```bash
+WEBSOCKET_DELAY=5 \
 WEBSOCKET_URL=ws://192.168.1.10:8089/ws \
 WEBSOCKET_USER=admin \
 WEBSOCKET_PASS=secret \
@@ -141,6 +145,22 @@ node server.js
 
 Сервер запустится на `ws://localhost:8089/ws`.
 
+## Docker
+
+```bash
+docker compose up -d
+```
+
+Контейнер доступен на порту `1099`. Переменные окружения задаются в `docker-compose.yaml`:
+
+```yaml
+environment:
+  - WEBSOCKET_DELAY=5
+  - WEBSOCKET_URL=ws://{server.ip}/ws
+  - WEBSOCKET_USER=user
+  - WEBSOCKET_PASS=11223
+```
+
 ## Интеграция с Prometheus
 
 Добавьте в `prometheus.yml` следующий scrape config:
@@ -151,7 +171,7 @@ scrape_configs:
     scrape_interval: 15s
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['localhost:8080']
+      - targets: ['localhost:1099']
 ```
 
 ## Сборка

@@ -22,6 +22,8 @@ class TemperatureWebSocketService(
 
     private val metrics: TemperatureMetrics,
 
+    @Value("\${repeat.delay}") private val delay: Long,
+
     @Value("\${websocket.url}") private val wsUrl: String,
 
     @Value("\${websocket.user}") private val wsUser: String,
@@ -41,7 +43,7 @@ class TemperatureWebSocketService(
         connect()
             .doOnError { log.error("WebSocket error: ${it.message}") }
             .retryWhen(
-                Retry.fixedDelay(Long.MAX_VALUE, Duration.ofSeconds(5))
+                Retry.fixedDelay(Long.MAX_VALUE, Duration.ofSeconds(delay))
                     .doBeforeRetry { log.warn("Reconnecting to $wsUrl...") }
             )
 
@@ -60,7 +62,7 @@ class TemperatureWebSocketService(
                 .flatMapMany {
                     Flux.interval(Duration.ZERO, Duration.ofSeconds(5))
                         .map { session.textMessage("""{"id":4100,"req_state":0}""") }
-                }.log()
+                }
 
             val send = session.send(Flux.concat(authMessage, periodicRequests))
 
